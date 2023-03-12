@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  db:
+    image: mongo:jammy
+    restart: always
+    ports:
+      - "27017:27017"
+  api:
+    build:
+      context: .
+      dockerfile: ./docker/api/Dockerfile
+    ports:
+      - "5555:5000"
+    volumes:
+      - ./src/api:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - resume
+  ui:
+    build:
+      context: .
+      dockerfile: ./docker/ui/Dockerfile
+    ports:
+      - "3333:3000"
+    volumes:
+      - ./src/ui:/app
+      - /app/node_modules
+    environment:
+      - WDS_SOCKET_HOST=127.0.0.1 
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    networks:
+      - resume
+    depends_on:
+      - api
+      - db
+networks:
+  resume:
